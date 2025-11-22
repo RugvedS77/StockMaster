@@ -38,6 +38,15 @@ export const Sidebar = ({ isOpen, user, onLogout }) => {
     </button>
   );
 
+  // Function to safely extract the username part from the email
+  const getUsername = () => {
+    // Check if user and user.email exist and convert to string before splitting
+    if (user && user.email) {
+        return String(user.email).split('@')[0];
+    }
+    return 'Manager';
+  };
+
   return (
     <aside className={`${isOpen ? 'w-64' : 'w-0'} bg-white border-r border-gray-200 transition-all duration-300 flex flex-col overflow-hidden fixed md:relative z-20 h-full`}>
       <div className="p-6 flex items-center space-x-3 border-b border-gray-100">
@@ -68,7 +77,7 @@ export const Sidebar = ({ isOpen, user, onLogout }) => {
             <User size={16} />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-800">{user?.email?.split('@')[0] || 'Manager'}</p>
+            <p className="text-sm font-medium text-gray-800">{getUsername()}</p>
             <p className="text-xs text-gray-500">Warehouse Mgr</p>
           </div>
           <button onClick={onLogout} className="text-gray-400 hover:text-red-600 transition-colors">

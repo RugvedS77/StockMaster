@@ -172,7 +172,7 @@ export const RootLayout = ({ onLogout, user }) => {
                {lowStockCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>}
              </button>
              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xs">
-                {user?.email?.[0].toUpperCase()}
+                {user?.email?.[0]}
              </div>
           </div>
         </header>
