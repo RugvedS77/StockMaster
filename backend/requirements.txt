@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy      # ORM for database models
+psycopg2-binary # PostgreSQL adapter
+alembic         # For database migrations (schema changes)
+pydantic 
+pydantic[email]       # Data validation
+python-multipart # For form data if needed
+supabase
+python-dotenv
+python-jose
+authlib         # For OAuth support
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
