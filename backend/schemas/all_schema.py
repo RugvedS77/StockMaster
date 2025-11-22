@@ -162,7 +162,8 @@ class ProductBase(BaseModel):
     sku: str
     category: Optional[str] = "General"
     uom: str = "Units"
-    cost: float = 0.0
+    cost: Optional[float] = 0.0 
+    
     min_reorder_level: int = 0
 
 class ProductUpdate(BaseModel):
@@ -180,8 +181,8 @@ class ProductOut(ProductBase):
     id: int
     created_at: datetime
 
-    on_hand: int    
-    free_to_use: int
+    on_hand: Optional[int] = 0
+    free_to_use: Optional[int] = 0
     class Config:
         from_attributes = True
 

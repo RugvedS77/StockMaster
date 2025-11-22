@@ -11,7 +11,7 @@ class MoveStatus(str, enum.Enum):
     
     DRAFT = "draft"       # Planning phase
     WAITING = "waiting"   # Waiting for availability
-    DONE = "done"         # Validated & Stock moved
+    READY = "ready"         # Validated & Stock moved
     CANCELLED = "cancelled"
 
 

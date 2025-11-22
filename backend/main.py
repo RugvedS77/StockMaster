@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from router import authRoutes, inventoryRoutes, productRoutes
+from router import authRoutes, inventoryRoutes, productRoutes, operationsRoutes
 
 app = FastAPI()
 
@@ -10,3 +10,4 @@ def read_root():
 app.include_router(authRoutes.router)
 app.include_router(productRoutes.router)
 app.include_router(inventoryRoutes.router)
+app.include_router(operationsRoutes.router)
