@@ -6,30 +6,28 @@ from sqlalchemy.sql import func
 import enum
 from database.postgresConn import Base
 
-# --- Enums for Fixed Choices ---
-
 class MoveStatus(str, enum.Enum):
     """Tracks the lifecycle of a stock movement [cite: 25]"""
+    
     DRAFT = "draft"       # Planning phase
     WAITING = "waiting"   # Waiting for availability
     DONE = "done"         # Validated & Stock moved
     CANCELLED = "cancelled"
 
-class LocationType(str, enum.Enum):
-    """Defines the behavior of a location [cite: 41, 87]"""
-    INTERNAL = "internal"         # Physical warehouse, Rack, Shelf
-    CUSTOMER = "customer"         # Virtual location for customers (Sending goods out)
-    VENDOR = "vendor"             # Virtual location for vendors (Receiving goods in)
-    INVENTORY_LOSS = "inventory_loss" # Virtual location for lost/damaged goods [cite: 102]
-    PRODUCTION = "production"     # Manufacturing floor
 
 class UserRole(str, enum.Enum):
     """[cite: 9, 10]"""
     MANAGER = "manager"
     STAFF = "staff"
 
-# --- Database Tables ---
+class LocationType(str, enum.Enum):
+    INTERNAL = "internal"         # Shelf, Rack inside a warehouse
+    CUSTOMER = "customer"         # Virtual
+    VENDOR = "vendor"             # Virtual
+    INVENTORY_LOSS = "inventory_loss" # Virtual
 
+
+# --- Database Tables ---
 class User(Base):
     __tablename__ = "users"
 
@@ -41,22 +39,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-class Location(Base):
-    """
-    Represents Warehouses, Racks, or Partner Locations.
-    Stock is calculated by summing moves IN minus moves OUT of a specific location ID.
-    """
-    __tablename__ = "locations"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False) # e.g., "Main Warehouse", "Rack A" [cite: 73, 74]
-    type = Column(PgEnum(LocationType), default=LocationType.INTERNAL) 
-    
-    # Optional: Parent location for hierarchy (e.g., Rack A is inside Main Warehouse)
-    parent_id = Column(Integer, ForeignKey("locations.id"), nullable=True)
-    
-    # Relationships (Self-referential for hierarchy)
-    children = relationship("Location", backref="parent", remote_side=[id])
 
 class Product(Base):
     """
@@ -70,10 +52,40 @@ class Product(Base):
     name = Column(String, index=True, nullable=False)     # [cite: 47]
     sku = Column(String, unique=True, index=True, nullable=False) # Stock Keeping Unit [cite: 48]
     category = Column(String, index=True)                 # [cite: 49]
-    uom = Column(String, default="Units")                 # Unit of Measure (kg, pcs) [cite: 50]
+    uom = Column(String, default="Units")                # Unit of Measure (kg, pcs)
+    cost = Column(Integer, default=0) # Storing in cents/paise or just raw number
+    
+    min_reorder_level = Column(Integer, default=0)                
     min_reorder_level = Column(Integer, default=0)        # For Low Stock Alerts [cite: 86]
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+# 1. NEW TABLE: Warehouse
+class Warehouse(Base):
+    __tablename__ = "warehouses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True, nullable=False)
+    short_code = Column(String, unique=True, index=True, nullable=False) # e.g., "WH1"
+    address = Column(String, nullable=True)
+    
+    # Relationship: A warehouse has many locations
+    locations = relationship("Location", back_populates="warehouse")
+
+# 2. UPDATED TABLE: Location
+class Location(Base):
+    __tablename__ = "locations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True, nullable=False) # e.g., "Rack A"
+    short_code = Column(String, index=True, nullable=False) # e.g., "RA-01"
+    type = Column(PgEnum(LocationType), default=LocationType.INTERNAL)
+    
+    # Link to Warehouse (Nullable because 'Vendor' locations don't have a physical warehouse)
+    warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=True)
+    
+    warehouse = relationship("Warehouse", back_populates="locations")
+
 
 class StockMove(Base):
     """
