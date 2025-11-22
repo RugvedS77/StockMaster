@@ -39,6 +39,10 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    # --- NEW OTP FIELDS ---
+    reset_token = Column(String, nullable=True)         # Stores the 6-digit OTP
+    reset_token_expiry = Column(DateTime, nullable=True) # Stores Expiration Time
+
 
 class Product(Base):
     """
